@@ -1,0 +1,8 @@
+{
+  "name": "ChronoBooth",
+  "description": "A time-travel photo booth that inserts your face into historical scenes.",
+  "requestFramePermissions": [
+    "camera"
+  ],
+  "majorCapabilities": []
+}
