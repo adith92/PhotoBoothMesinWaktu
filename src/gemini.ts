@@ -36,7 +36,9 @@ export async function generateBackground(era: string): Promise<string> {
 export async function generateCaricaturePortrait(faceDataUrl: string, era: string): Promise<string> {
   try {
     const base64Data = faceDataUrl.split(',')[1];
-    const prompt = `Transform this person into a smooth, highly detailed caricature portrait. Set the background to be an authentic ${era} scene. The person's skin should be extremely smooth and flawless. Make it colorful, vibrant, and artistic. Do not include any borders or frames.`;
+    const prompt = `Create a hilarious, highly viral meme-style image where this person's exact face is seamlessly swapped onto a main character, human, or creature in a completely random, wildly creative, and diverse ${era} scene. For example, if it's the dinosaur era, put their face on a caveman running from a T-Rex. Make the scene extremely dynamic and humorous! 
+
+Ensure the person's face is seamlessly blended into the character's body (like a funny, high-quality face swap), keeping their recognizable facial features but matching the lighting, shadows, and art style of the scene. The skin should be smooth and flawless like a beauty filter. CRITICAL: Do NOT just paste the face; integrate it realistically into the meme-like situation! Do not include any borders or frames.`;
     
     const response = await ai.models.generateContent({
       model: 'gemini-2.5-flash-image',

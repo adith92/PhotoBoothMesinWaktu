@@ -300,9 +300,21 @@ export default function Booth() {
 
         {/* Framing Guide */}
         {status === 'idle' && (
-          <div className="absolute inset-0 pointer-events-none flex items-center justify-center z-10 flex-col">
-            <div className="w-[70%] aspect-square border-2 border-white/30 rounded-full border-dashed" />
-            <p className="text-white/50 text-xs font-semibold uppercase tracking-wider mt-4">Place face here</p>
+          <div className="absolute inset-0 pointer-events-none flex items-center justify-center z-10 flex-col overflow-hidden">
+            {/* Face Detection Brackets */}
+            <div className="relative w-[50%] max-w-[200px] aspect-[3/4] flex items-center justify-center">
+               <div className="absolute top-0 left-0 w-8 h-8 border-t-4 border-l-4 border-emerald-400 rounded-tl-xl animate-pulse" />
+               <div className="absolute top-0 right-0 w-8 h-8 border-t-4 border-r-4 border-emerald-400 rounded-tr-xl animate-pulse" />
+               <div className="absolute bottom-0 left-0 w-8 h-8 border-b-4 border-l-4 border-emerald-400 rounded-bl-xl animate-pulse" />
+               <div className="absolute bottom-0 right-0 w-8 h-8 border-b-4 border-r-4 border-emerald-400 rounded-br-xl animate-pulse" />
+               
+               <div className="absolute inset-0 border border-emerald-400/20 bg-emerald-400/5 rounded-xl" />
+            </div>
+
+            <div className="absolute top-[75%] flex flex-col items-center">
+              <p className="text-emerald-400 text-xs font-bold uppercase tracking-widest drop-shadow-md bg-black/50 px-3 py-1 rounded-full">[ Face Target ]</p>
+              <p className="text-white/90 text-xs mt-2 drop-shadow-md text-center max-w-[250px] bg-black/40 px-3 py-1.5 rounded-lg backdrop-blur-sm">Sejajarkan wajah untuk Meme Face-Swap!</p>
+            </div>
           </div>
         )}
       </div>
