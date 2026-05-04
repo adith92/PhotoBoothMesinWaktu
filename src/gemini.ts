@@ -33,12 +33,19 @@ export async function generateBackground(era: string): Promise<string> {
   }
 }
 
-export async function generateCaricaturePortrait(faceDataUrl: string, era: string): Promise<string> {
+export async function generateCaricaturePortrait(faceDataUrl: string, era: string, style: string = '3D animated movie'): Promise<string> {
   try {
     const base64Data = faceDataUrl.split(',')[1];
-    const prompt = `Create a hilarious, highly viral meme-style image where this person's exact face is seamlessly swapped onto a main character, human, or creature in a completely random, wildly creative, and diverse ${era} scene. For example, if it's the dinosaur era, put their face on a caveman running from a T-Rex. Make the scene extremely dynamic and humorous! 
+    
+    let prompt = '';
+    if (style === 'Realistic Cinematic Photo') {
+      prompt = `Create a highly realistic, cinematic photo-manipulation where this person's exact face is seamlessly face-swapped onto a character in a historically accurate ${era} scene. 
+CRITICAL: Perform a realistic face swap with high fidelity. Preserve their exact natural skin tones, facial features, and expressions, but perfectly match the lighting, shadows, and environment of the ${era} scene. Make it look like a real photograph or movie still. Do not include any borders or frames.`;
+    } else {
+      prompt = `Create a hilarious, highly viral cartoon meme-style image where this person is transformed into a character in a completely random, wildly creative, and diverse ${era} scene. For example, if it's the dinosaur era, draw them as a cartoon caveman running from a T-Rex. Make the scene extremely dynamic and humorous! 
 
-Ensure the person's face is seamlessly blended into the character's body (like a funny, high-quality face swap), keeping their recognizable facial features but matching the lighting, shadows, and art style of the scene. The skin should be smooth and flawless like a beauty filter. CRITICAL: Do NOT just paste the face; integrate it realistically into the meme-like situation! Do not include any borders or frames.`;
+CRITICAL: Do NOT just paste the real face. You MUST redraw the person's face into a stylized ${style} character that perfectly matches the rest of the funny scene. Use the provided image strictly as a reference for their facial features, but fully synthesize and illustrate them into the whimsical ${style} art style. The final result should look like a fully illustrated cartoon meme. No borders or frames.`;
+    }
     
     const response = await ai.models.generateContent({
       model: 'gemini-2.5-flash-image',

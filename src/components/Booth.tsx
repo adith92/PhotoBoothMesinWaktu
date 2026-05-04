@@ -9,11 +9,12 @@ export default function Booth() {
   const { t, addPhoto } = useAppContext();
   const [era, setEra] = useState('mesir kuno');
   const [filter, setFilter] = useState('normal');
+  const [cartoonStyle, setCartoonStyle] = useState('3D animated movie');
   const [withMusic, setWithMusic] = useState(false);
   const [audioUrl, setAudioUrl] = useState<string | null>(null);
   const [enhancing, setEnhancing] = useState(false);
   const [isEnhanced, setIsEnhanced] = useState(false);
-  
+
   const [stream, setStream] = useState<MediaStream | null>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
   
@@ -23,12 +24,29 @@ export default function Booth() {
 
   const eras = Object.keys(t('eras') as any);
   const filters = ['normal', 'sepia', 'grayscale', 'contrast'];
+  const cartoonStyles = [
+    { id: '3D animated movie', label: '3D Movie' },
+    { id: 'Japanese Anime', label: 'Anime' },
+    { id: 'Comic Book illustration', label: 'Comic' },
+    { id: 'Vintage 1930s rubber hose cartoon', label: 'Retro' },
+    { id: 'Realistic Cinematic Photo', label: 'Realistic' }
+  ];
 
-  const getCssFilter = (f: string, enhanced: boolean) => {
+  const getCssFilter = (f: string, style: string, enhanced: boolean) => {
     let base = '';
-    if (f === 'sepia') base = 'sepia(0.8) contrast(1.1)';
-    else if (f === 'grayscale') base = 'grayscale(1) contrast(1.2)';
-    else if (f === 'contrast') base = 'contrast(1.5) saturate(1.2)';
+    
+    // Live Cartoon Style Preview
+    if (status === 'idle') {
+      if (style === '3D animated movie') base += 'saturate(1.5) contrast(1.1) brightness(1.1) ';
+      else if (style === 'Japanese Anime') base += 'saturate(1.2) contrast(1.2) brightness(1.15) hue-rotate(5deg) ';
+      else if (style === 'Comic Book illustration') base += 'saturate(1.8) contrast(1.4) ';
+      else if (style === 'Vintage 1930s rubber hose cartoon') base += 'sepia(0.6) contrast(1.2) brightness(0.9) grayscale(0.5) ';
+      else if (style === 'Realistic Cinematic Photo') base += 'saturate(1.05) contrast(1.1) ';
+    }
+
+    if (f === 'sepia') base += 'sepia(0.8) contrast(1.1)';
+    else if (f === 'grayscale') base += 'grayscale(1) contrast(1.2)';
+    else if (f === 'contrast') base += 'contrast(1.5) saturate(1.2)';
     
     if (enhanced) {
       base += ' contrast(1.15) saturate(1.25) brightness(1.05)';
@@ -115,7 +133,7 @@ export default function Booth() {
       // 2. Generate Caricature (Gemini) and optional music
       const eraString = t(`eras.${era}`) as string;
       const [finalImgDataUrl, generatedAudio] = await Promise.all([
-        generateCaricaturePortrait(faceDataUrl, eraString),
+        generateCaricaturePortrait(faceDataUrl, eraString, cartoonStyle),
         withMusic ? generateMoodMusic(eraString).catch(e => { console.error("Music fail", e); return null; }) : Promise.resolve(null)
       ]);
       
@@ -135,7 +153,7 @@ export default function Booth() {
   const handleSave = async () => {
     if (resultImg) {
       // Bake the filter and enhancement into the final saved image
-      const finalFilter = getCssFilter(filter, isEnhanced);
+      const finalFilter = getCssFilter(filter, cartoonStyle, isEnhanced);
       let saveUrl = resultImg;
 
       if (finalFilter !== 'none') {
@@ -194,6 +212,14 @@ export default function Booth() {
             >
               {eras.map(e => <option key={e} value={e}>{t(`eras.${e}` as any)}</option>)}
             </select>
+            <select
+              value={cartoonStyle}
+              onChange={e => setCartoonStyle(e.target.value)}
+              disabled={status === 'done'}
+              className="flex-1 bg-black/50 border border-white/20 text-white rounded-xl px-4 py-2 text-sm font-medium backdrop-blur-md outline-none disabled:opacity-50"
+            >
+              {cartoonStyles.map(s => <option key={s.id} value={s.id}>{s.label}</option>)}
+            </select>
             <button
               onClick={() => setWithMusic(!withMusic)}
               disabled={status === 'done'}
@@ -245,7 +271,7 @@ export default function Booth() {
             playsInline 
             muted 
             className={`w-full h-full object-cover transition-all duration-300 transform -scale-x-100`}
-            style={{ filter: getCssFilter(filter, false) }}
+            style={{ filter: getCssFilter(filter, cartoonStyle, false) }}
           />
         )}
 
@@ -279,7 +305,7 @@ export default function Booth() {
               <img 
                 src={resultImg} 
                 className="w-full h-full object-cover transition-all duration-300"
-                style={{ filter: getCssFilter(filter, isEnhanced) }}
+                style={{ filter: getCssFilter(filter, cartoonStyle, isEnhanced) }}
               />
               {/* Optional animated particles for extra "magic" */}
               <motion.div 
