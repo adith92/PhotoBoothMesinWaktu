@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
 import Page from './Page';
 import { useAppContext } from '../AppContext';
-import { generateBackground, generateMoodMusic } from '../gemini';
+import { generateCaricaturePortrait, generateMoodMusic } from '../gemini';
 import { Camera, RefreshCcw, Save, Loader2, Wand2, Music, Sparkles } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 
@@ -112,62 +112,16 @@ export default function Booth() {
       setStatus('processing');
       stopCamera();
 
-      // 2. Generate Background (Gemini) and optional music
+      // 2. Generate Caricature (Gemini) and optional music
       const eraString = t(`eras.${era}`) as string;
-      const [bgDataUrl, generatedAudio] = await Promise.all([
-        generateBackground(eraString),
+      const [finalImgDataUrl, generatedAudio] = await Promise.all([
+        generateCaricaturePortrait(faceDataUrl, eraString),
         withMusic ? generateMoodMusic(eraString).catch(e => { console.error("Music fail", e); return null; }) : Promise.resolve(null)
       ]);
       
       if (generatedAudio) setAudioUrl(generatedAudio);
 
-      // 3. Composite
-      const imgFace = new Image();
-      const imgBg = new Image();
-      await Promise.all([
-        new Promise(r => { imgFace.onload = r; imgFace.src = faceDataUrl; }),
-        new Promise(r => { imgBg.onload = r; imgBg.src = bgDataUrl; }),
-      ]);
-
-      const finalCanvas = document.createElement('canvas');
-      finalCanvas.width = cw;
-      finalCanvas.height = ch;
-      const ctx = finalCanvas.getContext('2d')!;
-
-      // Draw BG
-      ctx.drawImage(imgBg, 0, 0, cw, ch);
-
-      // Draw Face in an oval vignette
-      ctx.save();
-      ctx.beginPath();
-      // Ellipse roughly in center-top
-      ctx.ellipse(cw/2, ch * 0.45, cw * 0.35, ch * 0.35, 0, 0, Math.PI * 2);
-      ctx.closePath();
-      // Add a soft edge (simulated via shadow trick or just hard clip for now, 
-      // but let's do simple clip for speed, and add a stroke frame)
-      ctx.clip();
-      ctx.drawImage(imgFace, 0, 0, cw, ch);
-      ctx.restore();
-
-      // Draw a stylized frame around the cut
-      ctx.beginPath();
-      ctx.ellipse(cw/2, ch * 0.45, cw * 0.35, ch * 0.35, 0, 0, Math.PI * 2);
-      ctx.lineWidth = 12;
-      ctx.strokeStyle = "rgba(255,215,0,0.6)"; // Golden frame
-      ctx.stroke();
-      ctx.lineWidth = 2;
-      ctx.strokeStyle = "rgba(0,0,0,0.8)";
-      ctx.stroke();
-
-      // Add branding / era text
-      ctx.fillStyle = "rgba(0,0,0,0.7)";
-      ctx.fillRect(0, ch - 80, cw, 80);
-      ctx.fillStyle = "#fff";
-      ctx.font = "bold 32px sans-serif";
-      ctx.textAlign = "center";
-      ctx.fillText((t(`eras.${era}`) as string).toUpperCase(), cw/2, ch - 30);
-
-      setResultImg(finalCanvas.toDataURL('image/png'));
+      setResultImg(finalImgDataUrl);
       setStatus('done');
 
     } catch (err) {

@@ -33,6 +33,44 @@ export async function generateBackground(era: string): Promise<string> {
   }
 }
 
+export async function generateCaricaturePortrait(faceDataUrl: string, era: string): Promise<string> {
+  try {
+    const base64Data = faceDataUrl.split(',')[1];
+    const prompt = `Transform this person into a smooth, highly detailed caricature portrait. Set the background to be an authentic ${era} scene. The person's skin should be extremely smooth and flawless. Make it colorful, vibrant, and artistic. Do not include any borders or frames.`;
+    
+    const response = await ai.models.generateContent({
+      model: 'gemini-2.5-flash-image',
+      contents: {
+        parts: [
+          {
+            inlineData: {
+              data: base64Data,
+              mimeType: "image/png"
+            }
+          },
+          { text: prompt },
+        ],
+      },
+      config: {
+        // @ts-ignore
+        imageConfig: {
+          aspectRatio: "3:4",
+        }
+      }
+    });
+
+    for (const part of response.candidates?.[0]?.content?.parts || []) {
+      if (part.inlineData) {
+        return `data:image/png;base64,${part.inlineData.data}`;
+      }
+    }
+    throw new Error("No image data returned");
+  } catch (err) {
+    console.error("Error generating caricature:", err);
+    throw err;
+  }
+}
+
 export async function generateMoodMusic(mood: string): Promise<string> {
   try {
     const prompt = `Generate a 30-second cinematic and emotional track that captures a ${mood} mood perfectly.`;
